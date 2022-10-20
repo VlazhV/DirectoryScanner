@@ -20,9 +20,7 @@ namespace Directory_Scanner
 		public string Name { get; set; }
 		public FileType FileType { get; set; }
 
-		
-		public long Size { get; set; } = 0;
-		
+		public long Size { get; set; } = 0;		 		
 		public double RelativeSize { get; set; } = 100.0;
 
 		private ConcurrentQueue<FileSystemTreeNode> _childrenFiles = new();
@@ -35,11 +33,7 @@ namespace Directory_Scanner
 		public FileSystemTreeNode()
 		{
 		}
-
-		public FileSystemTreeNode(string path, string name)
-		{
-			_childrenFiles.Enqueue(new FileSystemTreeNode(path, name));
-		}
+		
 
 		public FileSystemTreeNode(string path, string name, FileType fileType, long size)
 		{
@@ -66,8 +60,10 @@ namespace Directory_Scanner
 				WriteIndented = true,
 			};
 			var json = JsonSerializer.Serialize( this, options );
-			using ( FileStream fileStream = new FileStream( @"C:\Users\danil\OneDrive\Рабочий стол\УНИВЕР\5 сем\result.json", FileMode.OpenOrCreate ) )
-			{
+			if ( File.Exists( @"C:\Users\danil\OneDrive\Рабочий стол\УНИВЕР\5 сем\result.json" ) )
+				File.Delete( @"C:\Users\danil\OneDrive\Рабочий стол\УНИВЕР\5 сем\result.json" );
+			using ( FileStream fileStream = new FileStream( @"C:\Users\danil\OneDrive\Рабочий стол\УНИВЕР\5 сем\result.json", FileMode.Create, FileAccess.Write ) )
+			{								
 				fileStream.Write( Encoding.Default.GetBytes( json ) );
 			}
 
