@@ -42,11 +42,11 @@ namespace Directory_Scanner
 				
 			}
 		}
-		private ConcurrentBag<FileSystemTreeNode> _childrenFiles = new();
+		private List<FileSystemTreeNode> _childrenFiles = new();
 
 		
 
-		public  ConcurrentBag<FileSystemTreeNode> ChildrenFiles 
+		public  List<FileSystemTreeNode> ChildrenFiles 
 		{
 			get { return _childrenFiles; }
 			set { _childrenFiles = value; }

@@ -23,6 +23,8 @@ namespace Directory_Scanner
 		private static object _lock = new object();
         private static CancellationTokenSource _tokenSource = new();
 
+        public static FileSystemTreeNode TreeRoot;
+
 
         private static FileSystemTreeNode StartScan(string path, FileSystemTreeNode? fatherNode)
         {            
@@ -111,7 +113,7 @@ namespace Directory_Scanner
             mainTask.Start();
             
                                                    
-            while ( !_queue.IsEmpty || _numberOfExecutingTasks > 0 ) 
+            while ( _numberOfExecutingTasks > 0 || !_queue.IsEmpty )
             {
                 if ( _numberOfExecutingTasks < MaxNumberOfExecutingTasks )
                 {
@@ -129,7 +131,7 @@ namespace Directory_Scanner
 
 				//Console.WriteLine( $"current number of exe tasks = {_numberOfExecutingTasks} | | Queue.Count = {_queue.Count}" );
 			}            
-            return mainTask.Result;
+            return TreeRoot = mainTask.Result;
 		}
 
 
