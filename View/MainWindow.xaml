@@ -3,47 +3,63 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:View" xmlns:viewmodel="clr-namespace:View.ViewModel" d:DataContext="{d:DesignInstance Type=viewmodel:ViewModelBase}"
+		xmlns:local="clr-namespace:View"
+		xmlns:mvvm="clr-namespace:View.ViewModel"
+		xmlns:model="clr-namespace:Directory_Scanner;assembly=Directory Scanner"
 		mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
 		<Grid.RowDefinitions>
-			<RowDefinition Height="100" />
-			<RowDefinition Height="270" />
-			<RowDefinition Height="auto" />
+			<RowDefinition Height="0.2*" />
+			<RowDefinition Height="0.7*" />
+			<RowDefinition Height="0.1*" />
 		</Grid.RowDefinitions>
 
 		<Grid>
 			<Grid.ColumnDefinitions>
-				<ColumnDefinition Width="100"/>
-				<ColumnDefinition Width="550"/>
-				<ColumnDefinition Width="Auto"/>
+				<ColumnDefinition Width="0.125*"/>
+				<ColumnDefinition Width="0.675*"/>
+				<ColumnDefinition Width="0.2*"/>
 				
 			</Grid.ColumnDefinitions>
 
-			<TextBlock Grid.Column="0" Text="Путь:" Margin="40 37 0 0 " FontSize="23" FontFamily="Consolas"/>
-			
-			
-			<TextBox Text="{Binding Path=Path}" Grid.Column="1"  Margin="5 7 0 0" FontSize="18" FontFamily="Consolas" Height="23"/>
+			<TextBlock Grid.Column="0" Text="Путь:" VerticalAlignment="Center" HorizontalAlignment="Right" FontSize="23" FontFamily="Consolas"/>
 
 
-			<Button Grid.Column="2" Width="75" Content="Обзор" FontSize="18" FontFamily="Consolas" Margin="10 7 0 0"
-				Height="23" />
+			<TextBox Text="{Binding Path=Path}" Grid.Column="1"  VerticalAlignment="Center" FontSize="18" FontFamily="Consolas" Height="23"/>
+
+
+			<Button Grid.Column="2" Width="75" Content="Обзор" FontSize="18" FontFamily="Consolas" VerticalAlignment="Center"
+				Height="23" Command="{Binding BrowseCommand}"/>
 		</Grid>
 
-		<TreeView Grid.Row="1"/>
+		<TreeView Grid.Row="1" Name="treeView" VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Recycling" BorderThickness="0">
+			<TreeView.Resources>
+				<DataTemplate DataType="{x:Type model:FileSystemTreeNode}">
+					<StackPanel>
+						<TextBlock Text="{Binding Name}"/>
+						<TextBlock Text=" "/>
+						<TextBlock Text="{Binding Size}"/>
+						<TextBlock Text="B "/>
+						<TextBlock Text="{Binding RelativeSize}"/>
+						<TextBlock Text="%"/>
+					</StackPanel>
+				</DataTemplate>
+			</TreeView.Resources>
+		</TreeView>
 
 		<Grid Grid.Row="2">
 			<Grid.ColumnDefinitions>
-				<ColumnDefinition Width="500"/>
+				<ColumnDefinition Width="0.625*"/>
 				<ColumnDefinition Width="auto"/>
 			</Grid.ColumnDefinitions>
 
-			<Button Grid.Column="1" Width="75" FontSize="18" FontFamily="Consolas" Margin="0 10 0 0" Command="{Binding ScanCommand}">
+			<Button Grid.Column="1" Width="75" FontSize="18" FontFamily="Consolas" VerticalAlignment="Center"  Command="{Binding ScanCommand}">
 				Старт
 			</Button>
 			<Button Grid.Column="1" Width="75" FontSize="18" FontFamily="Consolas"
-			Margin="175 10 0 0" Command="{Binding PushMessageCommand}">
+			VerticalAlignment="Center"
+			Margin="175 0 0 0" Command="{Binding PushMessageCommand}">
 				Отмена
 			</Button>
 		</Grid>

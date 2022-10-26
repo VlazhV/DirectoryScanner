@@ -6,7 +6,9 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using Microsoft.WindowsAPICodePack.Dialogs;
 using Directory_Scanner;
+
 
 namespace View.ViewModel
 {
@@ -47,21 +49,27 @@ namespace View.ViewModel
 		}
 
 		private FileSystemTreeNode? _treeRoot;
+		private bool _scanStarted = false;
 		private async void Scan(object strPath)
-		{
-			showmsg( "Ssss" );
+		{			
+			if ( _scanStarted )
+			{
+				MessageBox.Show( "Scannig has been already started." );
+				return;
+			}
+
+			_scanStarted = true;
 			await Task.Run( () => {
-				_treeRoot = DirectoryScanner.Scan( _path );
-				showmsg( "Sss" );
-				DirectoryScanner.CountSizeRecursively( _treeRoot );
-				showmsg( "SS" );
-				DirectoryScanner.CountRelativeSizeRecursively( _treeRoot );
-				showmsg( "s" );
+				_treeRoot = DirectoryScanner.Scan( _path );	
+				//DirectoryScanner.CountSizeRecursively( _treeRoot );			
+				//DirectoryScanner.CountRelativeSizeRecursively( _treeRoot );				
 			} ) ;
 
 			_treeRoot?.ToJson();
-			showmsg( "S" );
+			MessageBox.Show( "Scanning finished." );
 
+			_scanStarted = false;
+			
 
 		}
 
@@ -79,6 +87,32 @@ namespace View.ViewModel
 					_scanCommand = new Command(new Action<object>(Scan));
 					return _scanCommand;
 				}
+			}
+		}
+
+		CommonOpenFileDialog openFileDialog = new (){ IsFolderPicker=true};
+
+		private void Browse (object o)
+		{
+			if (openFileDialog.ShowDialog() == CommonFileDialogResult.Ok)
+			{
+				Path = openFileDialog.FileName;
+			}
+		}
+		
+		private Command? _browseCommand = null;
+		public Command BrowseCommand
+		{
+			get
+			{
+				if ( _browseCommand != null )
+					return _browseCommand;
+				else
+				{
+					_browseCommand = new Command( Browse );
+					return _browseCommand;
+				}
+
 			}
 		}
 	}
