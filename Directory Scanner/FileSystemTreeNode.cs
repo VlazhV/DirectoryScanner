@@ -18,6 +18,7 @@ namespace Directory_Scanner
 	{
 		[JsonIgnore]
 		public FileSystemTreeNode? ParentNode{ get; set; }
+
 		public string Path { get; set; }
 
 		private string _name;
@@ -93,6 +94,15 @@ namespace Directory_Scanner
 			Name = name;
 			FileType = fileType;
 			Size = size;
+		}
+
+		public FileSystemTreeNode( string path, string name, FileType fileType, long size, FileSystemTreeNode? fatherNode )
+		{
+			Path = path;
+			Name = name;
+			FileType = fileType;
+			Size = size;
+			ParentNode = fatherNode;
 		}
 
 		public FileSystemTreeNode( string path, string name, FileType fileType )
