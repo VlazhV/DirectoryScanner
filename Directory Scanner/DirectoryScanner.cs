@@ -20,10 +20,11 @@ namespace Directory_Scanner
         private static int _numberOfExecutingTasks = 0;         
 
         private static ConcurrentQueue<Task> _queue = new();
-		
-       
+		private static object _lock = new object();
+        private static CancellationTokenSource _tokenSource = new();
 
-        private static FileSystemTreeNode? StartScan(string path, FileSystemTreeNode? fatherNode)
+
+        private static FileSystemTreeNode StartScan(string path, FileSystemTreeNode? fatherNode)
         {            
             DirectoryInfo directoryInfo = new ( path );
             FileSystemTreeNode currTreeNode = new( path, directoryInfo.Name );
@@ -33,15 +34,27 @@ namespace Directory_Scanner
             if ( fatherNode != null )
                 fatherNode.ChildrenFiles.Add( currTreeNode );
 
+            bool acquiredLock = false;
             if ( directoryInfo.LinkTarget == null )
                 currTreeNode.FileType = FileType.Directory;
             else
             {
                 currTreeNode.FileType = FileType.Link;
-                --_numberOfExecutingTasks;
-                return currTreeNode;
+                
+                try 
+                {
+                    Monitor.Enter( _lock, ref acquiredLock);
+                    --_numberOfExecutingTasks;
+                }                
+				finally
+				{
+                    if ( acquiredLock ) Monitor.Exit(_lock);
+				}
+				return currTreeNode;
             }
 
+            if ( _tokenSource.Token.IsCancellationRequested )
+                return currTreeNode;
 
             IEnumerable<string> files;
             IEnumerable<string> directories;
@@ -58,41 +71,63 @@ namespace Directory_Scanner
 
                 foreach ( var directory in directories )
                 {
-                    _queue.Enqueue( new Task<FileSystemTreeNode?>( () => StartScan( directory, currTreeNode ) ) );
+                    _queue.Enqueue( new Task<FileSystemTreeNode?>( () => StartScan( directory, currTreeNode ), _tokenSource.Token ) );
                 }
 
-                --_numberOfExecutingTasks;
+                
             }
 			catch (UnauthorizedAccessException)
 			{                
 			}
 
-			
-			return currTreeNode;
+            try
+            {
+                Monitor.Enter( _lock, ref acquiredLock );
+                --_numberOfExecutingTasks;
+            }
+            finally
+            {
+                if ( acquiredLock ) Monitor.Exit( _lock );
+            }
+            
+            return currTreeNode;
 		}
 
         
-
-        public static FileSystemTreeNode Scan(string path)
+        public static void CancelScan()
         {
-            Task<FileSystemTreeNode?> mainTask = new Task<FileSystemTreeNode?>( () => StartScan( path, null ) );
+            _tokenSource.Cancel();
+            _queue.Clear();
+            _numberOfExecutingTasks = 0;
+            _tokenSource.Dispose();
+            _tokenSource = new();
+		}
+
+        
+        public static FileSystemTreeNode Scan(string path)
+        {            
+            Task<FileSystemTreeNode> mainTask = new Task<FileSystemTreeNode>( () => StartScan( path, null ) , _tokenSource.Token);            
             ++_numberOfExecutingTasks;
             mainTask.Start();
-            int stopNumber = 0;
+            
                                                    
-            while ((_numberOfExecutingTasks > 0 || !_queue.IsEmpty ) && stopNumber < 100)
+            while ( !_queue.IsEmpty || _numberOfExecutingTasks > 0 ) 
             {
                 if ( _numberOfExecutingTasks < MaxNumberOfExecutingTasks )
+                {
                     if ( _queue.TryDequeue( out var task ) )
                     {
                         ++_numberOfExecutingTasks;
-                        task.Start();
-                        stopNumber = 0;
+                        try
+                        {
+                            task.Start();
+                        }
+                        catch ( InvalidOperationException )
+                        { }                        
                     }
-                    else
-                        ++stopNumber;
+                }
 
-                Console.WriteLine( $"current number of exe tasks = {_numberOfExecutingTasks} | | Queue.Count = {_queue.Count}" );    
+				//Console.WriteLine( $"current number of exe tasks = {_numberOfExecutingTasks} | | Queue.Count = {_queue.Count}" );
 			}            
             return mainTask.Result;
 		}

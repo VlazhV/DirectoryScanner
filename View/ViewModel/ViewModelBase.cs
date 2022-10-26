@@ -8,7 +8,8 @@ using System.Threading.Tasks;
 using System.Windows;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using Directory_Scanner;
-
+using System.Threading;
+using System.Windows.Controls;
 
 namespace View.ViewModel
 {
@@ -25,6 +26,8 @@ namespace View.ViewModel
 			MessageBox.Show((string)o);
 		}
 
+		
+
 		private string _path = @"C:\Users\danil\OneDrive\Рабочий стол\УНИВЕР\5 сем\СПП\testDirectory";
 		public string Path
 		{
@@ -33,36 +36,44 @@ namespace View.ViewModel
 		}
 		
 
-		private Command? _pushMessageCommand = null;
-		public Command PushMessageCommand
+		private void Cancel(object o)
+		{
+			DirectoryScanner.CancelScan();
+		}
+
+		private Command? _cancelCommand = null;
+		public Command CancelCommand
 		{
 			get
 			{
-				if ( _pushMessageCommand != null )
-					return _pushMessageCommand;
+				if ( _cancelCommand != null )
+					return _cancelCommand;
 				else
 				{
-					_pushMessageCommand = new Command( new Action<object>(showmsg) ) ;
-					return _pushMessageCommand;
+					_cancelCommand = new Command( new Action<object>(Cancel) ) ;
+					return _cancelCommand;
 				}
 			}				
 		}
 
 		private FileSystemTreeNode? _treeRoot;
 		private bool _scanStarted = false;
+		
 		private async void Scan(object strPath)
 		{			
+			
 			if ( _scanStarted )
 			{
 				MessageBox.Show( "Scannig has been already started." );
 				return;
 			}
+			
 
 			_scanStarted = true;
 			await Task.Run( () => {
-				_treeRoot = DirectoryScanner.Scan( _path );	
-				//DirectoryScanner.CountSizeRecursively( _treeRoot );			
-				//DirectoryScanner.CountRelativeSizeRecursively( _treeRoot );				
+				_treeRoot = DirectoryScanner.Scan( _path );
+				DirectoryScanner.CountSizeRecursively( _treeRoot );
+				DirectoryScanner.CountRelativeSizeRecursively( _treeRoot );
 			} ) ;
 
 			_treeRoot?.ToJson();
@@ -115,5 +126,8 @@ namespace View.ViewModel
 
 			}
 		}
+
+		
+
 	}
 }

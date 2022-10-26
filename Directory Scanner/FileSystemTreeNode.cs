@@ -14,37 +14,18 @@ namespace Directory_Scanner
 		Link
 	}
 
-	public class FileSystemTreeNode : INotifyPropertyChanged
+	public class FileSystemTreeNode
 	{
 		[JsonIgnore]
 		public FileSystemTreeNode? ParentNode{ get; set; }
 
 		public string Path { get; set; }
 
-		private string _name;
-		public string Name 
-		{ 
-			get { return _name; }
-			set 
-			{ 
-				_name = value;
-				OnPropertyChanged( "Name" );
-			} 
-		}
+		public string Name { get; set; }
 		public FileType FileType { get; set; }
 
-
-		private long _size = 0;
-		public long Size
-		{ 
-			get { return _size; } 
-			set { 
-				_size = value; 
-				OnPropertyChanged("Size"); 
-			}
-			
-		}
-
+		public long Size { get; set; } = 0;
+		
 		private double _relativeSize = 100.0;
 
 		public double RelativeSize
@@ -58,19 +39,12 @@ namespace Directory_Scanner
 					_relativeSize = -100.0;
 				else
 					_relativeSize = value;
-				OnPropertyChanged( "RelativeSize" );
+				
 			}
 		}
 		private ConcurrentBag<FileSystemTreeNode> _childrenFiles = new();
 
 		
-		public event PropertyChangedEventHandler? PropertyChanged;
-		public void OnPropertyChanged([CallerMemberName] string property = "")
-		{
-			if (PropertyChanged != null)
-				PropertyChanged(this, new PropertyChangedEventArgs(property));
-		}
-
 
 		public  ConcurrentBag<FileSystemTreeNode> ChildrenFiles 
 		{

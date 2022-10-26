@@ -5,7 +5,6 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 		xmlns:local="clr-namespace:View"
 		xmlns:mvvm="clr-namespace:View.ViewModel"
-		xmlns:model="clr-namespace:Directory_Scanner;assembly=Directory Scanner"
 		mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
@@ -34,8 +33,8 @@
 		</Grid>
 
 		<TreeView Grid.Row="1" Name="treeView" VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Recycling" BorderThickness="0">
-			<TreeView.Resources>
-				<DataTemplate DataType="{x:Type model:FileSystemTreeNode}">
+			<!--<TreeView.Resources>
+				<DataTemplate>
 					<StackPanel>
 						<TextBlock Text="{Binding Name}"/>
 						<TextBlock Text=" "/>
@@ -45,7 +44,7 @@
 						<TextBlock Text="%"/>
 					</StackPanel>
 				</DataTemplate>
-			</TreeView.Resources>
+			</TreeView.Resources>-->
 		</TreeView>
 
 		<Grid Grid.Row="2">
@@ -54,12 +53,12 @@
 				<ColumnDefinition Width="auto"/>
 			</Grid.ColumnDefinitions>
 
-			<Button Grid.Column="1" Width="75" FontSize="18" FontFamily="Consolas" VerticalAlignment="Center"  Command="{Binding ScanCommand}">
+			<Button Grid.Column="1" Width="75" FontSize="18" FontFamily="Consolas" VerticalAlignment="Center"  Command="{Binding ScanCommand}" IsDefault="true">
 				Старт
 			</Button>
 			<Button Grid.Column="1" Width="75" FontSize="18" FontFamily="Consolas"
 			VerticalAlignment="Center"
-			Margin="175 0 0 0" Command="{Binding PushMessageCommand}">
+			Margin="175 0 0 0" Command="{Binding CancelCommand}">
 				Отмена
 			</Button>
 		</Grid>
