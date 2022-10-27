@@ -31,21 +31,22 @@
 			<Button Grid.Column="2" Width="75" Content="Обзор" FontSize="18" FontFamily="Consolas" VerticalAlignment="Center"
 				Height="23" Command="{Binding BrowseCommand}"/>
 		</Grid>
-
-		<TreeView Grid.Row="1" Name="treeView" VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Recycling" BorderThickness="0">
-			<!--<TreeView.Resources>
-				<DataTemplate>
-					<StackPanel>
-						<TextBlock Text="{Binding Name}"/>
-						<TextBlock Text=" "/>
-						<TextBlock Text="{Binding Size}"/>
-						<TextBlock Text="B "/>
-						<TextBlock Text="{Binding RelativeSize}"/>
-						<TextBlock Text="%"/>
-					</StackPanel>
-				</DataTemplate>
-			</TreeView.Resources>-->
-		</TreeView>
+		<ScrollViewer Grid.Row="1" CanContentScroll="True" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible">
+			<TreeView  x:Name="treeView" ItemsSource="{Binding TreeVM}" FontSize="18" FontFamily="Consolas">
+				<TreeView.ItemTemplate>
+					<HierarchicalDataTemplate ItemsSource="{Binding Path=ChildrenFiles}">
+						<DockPanel>
+							<!--<Image Height="25" Width="25" Source="{Binding ImagePath}"/>-->
+							<TextBlock Text="{Binding Name}"/>
+							<TextBlock Text=" "/>
+							<TextBlock Text="{Binding Size}"/>
+							<TextBlock Text=" "/>
+							<TextBlock Text="{Binding RelativeSize}"/>
+						</DockPanel>
+					</HierarchicalDataTemplate>
+				</TreeView.ItemTemplate>
+			</TreeView>
+		</ScrollViewer>
 
 		<Grid Grid.Row="2">
 			<Grid.ColumnDefinitions>

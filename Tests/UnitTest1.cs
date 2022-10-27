@@ -100,6 +100,7 @@ namespace Tests
 			string path = @"C:\Users\danil\";
 			FileSystemTreeNode treeRoot;
 			Task<FileSystemTreeNode> task = new Task<FileSystemTreeNode>( () =>
+
 			{
 				var streeRoot = DirectoryScanner.Scan( path );
 				DirectoryScanner.CountSizeRecursively( streeRoot );

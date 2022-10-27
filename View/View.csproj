@@ -15,4 +15,8 @@
     <ProjectReference Include="..\Directory Scanner\Directory Scanner.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    
+  </ItemGroup>
+
 </Project>

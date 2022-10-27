@@ -10,6 +10,7 @@ using Microsoft.WindowsAPICodePack.Dialogs;
 using Directory_Scanner;
 using System.Threading;
 using System.Windows.Controls;
+using System.Collections.ObjectModel;
 
 namespace View.ViewModel
 {
@@ -19,11 +20,6 @@ namespace View.ViewModel
 		public void OnPropertyChanged( [CallerMemberName] string propName = "" )
 		{
 			PropertyChanged?.Invoke( this, new PropertyChangedEventArgs( propName ) );
-		}
-
-		private void showmsg (object o)
-		{
-			MessageBox.Show((string)o);
 		}
 
 		
@@ -57,9 +53,24 @@ namespace View.ViewModel
 		}
 
 		private FileSystemTreeNode? _treeRoot;
+		private FileSystemTreeNode TreeRoot
+		{
+			get
+				{ return _treeRoot; }
+			set
+			{
+				if ( value != null ) 
+				{ 
+					TreeVM.Clear();
+					TreeVM.Add( TreeConverter.Convert( value ) );			
+					OnPropertyChanged( "TreeVM" );
+				}
+
+			}
+		}
 		private bool _scanStarted = false;
 		
-		private async void Scan(object strPath)
+		private void Scan(object o)
 		{			
 			
 			if ( _scanStarted )
@@ -69,14 +80,14 @@ namespace View.ViewModel
 			}
 			
 
-			_scanStarted = true;
-			await Task.Run( () => {
-				_treeRoot = DirectoryScanner.Scan( _path );
-				DirectoryScanner.CountSizeRecursively( _treeRoot );
-				DirectoryScanner.CountRelativeSizeRecursively( _treeRoot );
-			} ) ;
-
-			_treeRoot?.ToJson();
+			_scanStarted = true;			
+			var scanResult = DirectoryScanner.Scan( _path );						
+			DirectoryScanner.CountSizeRecursively( scanResult );
+			DirectoryScanner.CountRelativeSizeRecursively( scanResult );
+			TreeRoot = scanResult;
+			
+			
+			TreeRoot?.ToJson();
 			MessageBox.Show( "Scanning finished." );
 
 			_scanStarted = false;
@@ -84,8 +95,14 @@ namespace View.ViewModel
 
 		}
 
-		
-		
+		Thread _scanThread;
+
+		private void ScanNewThread(object o)
+		{
+			_scanThread = new Thread(new ParameterizedThreadStart(Scan));
+			_scanThread.Start();
+		}
+
 		private Command? _scanCommand = null;
 		public Command ScanCommand
 		{
@@ -94,8 +111,8 @@ namespace View.ViewModel
 				if ( _scanCommand != null )
 					return _scanCommand;
 				else
-				{										
-					_scanCommand = new Command(new Action<object>(Scan));
+				{					
+					_scanCommand = new Command(new Action<object>(Scan));					
 					return _scanCommand;
 				}
 			}
@@ -128,6 +145,6 @@ namespace View.ViewModel
 		}
 
 		
-
+		public ObservableCollection<TreeViewModel> TreeVM { get; set; } = new();
 	}
 }

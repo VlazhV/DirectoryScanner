@@ -24,7 +24,7 @@ namespace View
 		public MainWindow()
 		{
 			InitializeComponent();
-			DataContext = new ViewModelBase();			
+			DataContext = new ViewModelBase();				
 		}
 	}
 }
