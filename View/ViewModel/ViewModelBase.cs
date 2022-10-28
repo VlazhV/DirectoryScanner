@@ -22,7 +22,10 @@ namespace View.ViewModel
 			PropertyChanged?.Invoke( this, new PropertyChangedEventArgs( propName ) );
 		}
 
+
 		
+
+
 
 		private string _path = @"C:\Users\danil\OneDrive\Рабочий стол\УНИВЕР\5 сем\СПП\testDirectory";
 		public string Path
@@ -53,19 +56,23 @@ namespace View.ViewModel
 		}
 
 		private FileSystemTreeNode? _treeRoot;
-		private FileSystemTreeNode TreeRoot
+		private FileSystemTreeNode? TreeRoot
 		{
 			get
 				{ return _treeRoot; }
 			set
 			{
 				if ( value != null ) 
-				{ 
-					TreeVM.Clear();
-					TreeVM.Add( TreeConverter.Convert( value ) );			
-					OnPropertyChanged( "TreeVM" );
+				{
+					_treeRoot = value;
+					TreeVM = new ObservableCollection<TreeViewModel>();
+					TreeVM.Add( TreeConverter.Convert( value) );
+					OnPropertyChanged( "TreeVM" );					
 				}
-
+				else								
+					MessageBox.Show( "Such Directory or File does not exist." );
+				
+				_scanStarted = false;
 			}
 		}
 		private bool _scanStarted = false;
@@ -78,30 +85,27 @@ namespace View.ViewModel
 				MessageBox.Show( "Scannig has been already started." );
 				return;
 			}
-			
+						
 
-			_scanStarted = true;			
-			var scanResult = DirectoryScanner.Scan( _path );						
-			DirectoryScanner.CountSizeRecursively( scanResult );
-			DirectoryScanner.CountRelativeSizeRecursively( scanResult );
-			TreeRoot = scanResult;
-			
-			
-			TreeRoot?.ToJson();
-			MessageBox.Show( "Scanning finished." );
+			_scanStarted = true;
 
-			_scanStarted = false;
+			_scanThread = new Thread( () =>
+			{
+				var scanResult = DirectoryScanner.Scan( _path );
+				if ( scanResult != null )
+				{
+					DirectoryScanner.CountSizeRecursively( scanResult );
+					DirectoryScanner.CountRelativeSizeRecursively( scanResult );
+				}
+						
+				TreeRoot = scanResult;			
+			} );
 			
-
+			_scanThread.Start();			
 		}
 
 		Thread _scanThread;
-
-		private void ScanNewThread(object o)
-		{
-			_scanThread = new Thread(new ParameterizedThreadStart(Scan));
-			_scanThread.Start();
-		}
+		
 
 		private Command? _scanCommand = null;
 		public Command ScanCommand
@@ -144,7 +148,7 @@ namespace View.ViewModel
 			}
 		}
 
-		
-		public ObservableCollection<TreeViewModel> TreeVM { get; set; } = new();
+
+		public ObservableCollection<TreeViewModel> TreeVM { get; set; }
 	}
 }

@@ -31,22 +31,23 @@
 			<Button Grid.Column="2" Width="75" Content="Обзор" FontSize="18" FontFamily="Consolas" VerticalAlignment="Center"
 				Height="23" Command="{Binding BrowseCommand}"/>
 		</Grid>
-		<ScrollViewer Grid.Row="1" CanContentScroll="True" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible">
-			<TreeView  x:Name="treeView" ItemsSource="{Binding TreeVM}" FontSize="18" FontFamily="Consolas">
+		
+			<TreeView  Grid.Row="1" x:Name="treeView" ItemsSource="{Binding TreeVM}" FontSize="18" FontFamily="Consolas">
 				<TreeView.ItemTemplate>
 					<HierarchicalDataTemplate ItemsSource="{Binding Path=ChildrenFiles}">
 						<DockPanel>
-							<!--<Image Height="25" Width="25" Source="{Binding ImagePath}"/>-->
+							<Image Height="25" Width="25" Source="{Binding ImagePath}"/>
 							<TextBlock Text="{Binding Name}"/>
-							<TextBlock Text=" "/>
+							<TextBlock Text=" ( "/>
 							<TextBlock Text="{Binding Size}"/>
-							<TextBlock Text=" "/>
+							<TextBlock Text=" -- "/>
 							<TextBlock Text="{Binding RelativeSize}"/>
+							<TextBlock Text=" )"/>
 						</DockPanel>
 					</HierarchicalDataTemplate>
 				</TreeView.ItemTemplate>
 			</TreeView>
-		</ScrollViewer>
+		
 
 		<Grid Grid.Row="2">
 			<Grid.ColumnDefinitions>

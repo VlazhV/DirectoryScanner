@@ -16,14 +16,14 @@ namespace Directory_Scanner
 	public static class DirectoryScanner
 	{
 
-        public static int MaxNumberOfExecutingTasks { get; set; } = 7;        
+        public static int MaxNumberOfExecutingTasks { get; set; } = 100;        
         private static int _numberOfExecutingTasks = 0;         
 
         private static ConcurrentQueue<Task> _queue = new();
 		private static object _lock = new object();
         private static CancellationTokenSource _tokenSource = new();
 
-        public static FileSystemTreeNode TreeRoot;
+        public static FileSystemTreeNode? TreeRoot;
 
 
         private static FileSystemTreeNode StartScan(string path, FileSystemTreeNode? fatherNode)
@@ -50,7 +50,8 @@ namespace Directory_Scanner
                 }                
 				finally
 				{
-                    if ( acquiredLock ) Monitor.Exit(_lock);
+                    if ( acquiredLock ) Monitor.Exit( _lock );
+                    else throw new Exception();
 				}
 				return currTreeNode;
             }
@@ -62,26 +63,31 @@ namespace Directory_Scanner
             IEnumerable<string> directories;
             try
 			{
-				files = Directory.EnumerateFiles( path );
+
+                files = Directory.EnumerateFiles( path );
                 directories = Directory.EnumerateDirectories( path );
+
+                foreach ( var directory in directories )
+                {
+                    _queue.Enqueue( new Task<FileSystemTreeNode?>( () => StartScan( directory, currTreeNode ), _tokenSource.Token ) );                    
+                }
+
+                
                 foreach ( var file in files )
                 {
                     FileInfo fileInfo = new( file );
                     currTreeNode.ChildrenFiles.Add( new FileSystemTreeNode( file, fileInfo.Name, fileInfo.LinkTarget == null ? FileType.RegularFile : FileType.Link, fileInfo.Length, currTreeNode ) );
                 }
-
-
-                foreach ( var directory in directories )
-                {
-                    _queue.Enqueue( new Task<FileSystemTreeNode?>( () => StartScan( directory, currTreeNode ), _tokenSource.Token ) );
-                }
-
+        
                 
+
+
             }
 			catch (UnauthorizedAccessException)
 			{                
 			}
 
+            
             try
             {
                 Monitor.Enter( _lock, ref acquiredLock );
@@ -90,6 +96,7 @@ namespace Directory_Scanner
             finally
             {
                 if ( acquiredLock ) Monitor.Exit( _lock );
+                else throw new Exception();
             }
             
             return currTreeNode;
@@ -105,32 +112,41 @@ namespace Directory_Scanner
             _tokenSource = new();
 		}
 
-        
-        public static FileSystemTreeNode Scan(string path)
-        {            
-            Task<FileSystemTreeNode> mainTask = new Task<FileSystemTreeNode>( () => StartScan( path, null ) , _tokenSource.Token);            
-            ++_numberOfExecutingTasks;
+
+        public static FileSystemTreeNode? Scan( string path )
+        {
+            if ( !Directory.Exists( path ) )
+            {
+                if ( !File.Exists( path ) )
+                    return null;
+                else
+                {
+                    FileInfo fileInfo = new( path );
+                    TreeRoot = new FileSystemTreeNode( path, fileInfo.Name, fileInfo.LinkTarget == null ? FileType.RegularFile : FileType.Link, fileInfo.Length, null );
+                    return TreeRoot;
+                }
+            }
+
+            Task<FileSystemTreeNode> mainTask = new Task<FileSystemTreeNode>( () => StartScan( path, null ), _tokenSource.Token );
+            _numberOfExecutingTasks = 1;
             mainTask.Start();
-            
-                                                   
-            while ( _numberOfExecutingTasks > 0 || !_queue.IsEmpty )
+
+
+
+            while ( _numberOfExecutingTasks > 0 || !_queue.IsEmpty ) 
             {
                 if ( _numberOfExecutingTasks < MaxNumberOfExecutingTasks )
                 {
                     if ( _queue.TryDequeue( out var task ) )
-                    {
+                    {                        
                         ++_numberOfExecutingTasks;
-                        try
-                        {
-                            task.Start();
-                        }
-                        catch ( InvalidOperationException )
-                        { }                        
+                        task.Start();
                     }
                 }
 
-				//Console.WriteLine( $"current number of exe tasks = {_numberOfExecutingTasks} | | Queue.Count = {_queue.Count}" );
-			}            
+                
+			}
+
             return TreeRoot = mainTask.Result;
 		}
 
@@ -176,8 +192,7 @@ namespace Directory_Scanner
             ++_numberOfExecutingTasks;
             mainTask.Start();
             
-
-            while ( _queue.IsEmpty ) ;
+          
             
          
             while ( _numberOfExecutingTasks > 0 || !_queue.IsEmpty )
@@ -185,6 +200,9 @@ namespace Directory_Scanner
                 if (_numberOfExecutingTasks <= MaxNumberOfExecutingTasks)
                     if ( _queue.TryDequeue( out var task ) )
 					{
+
+
+
                         ++_numberOfExecutingTasks;
                         task.Start();
                         
@@ -246,9 +264,7 @@ namespace Directory_Scanner
             foreach ( var child in treeNode.ChildrenFiles )
             {
 
-                child.RelativeSize = (double)child.Size / treeNode.Size * 100.0;
-                child.RelativeSize = Double.IsNaN(child.RelativeSize) ? 100.0 : child.RelativeSize;
-                
+                child.RelativeSize = (double)child.Size / treeNode.Size * 100.0;                                
                 CountRelativeSizeRecursively(child);
             }
         }

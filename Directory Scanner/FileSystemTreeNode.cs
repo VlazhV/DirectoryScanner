@@ -34,19 +34,17 @@ namespace Directory_Scanner
 			set
 			{
 				if ( Double.IsNaN( value ) )
-					_relativeSize = 100.0;
-				else if ( Double.IsInfinity( value ) )
-					_relativeSize = -100.0;
+					_relativeSize = 100.0;				
 				else
 					_relativeSize = value;
 				
 			}
 		}
-		private List<FileSystemTreeNode> _childrenFiles = new();
+		private ConcurrentBag<FileSystemTreeNode> _childrenFiles = new();
 
 		
 
-		public  List<FileSystemTreeNode> ChildrenFiles 
+		public ConcurrentBag<FileSystemTreeNode> ChildrenFiles 
 		{
 			get { return _childrenFiles; }
 			set { _childrenFiles = value; }
