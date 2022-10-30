@@ -6,15 +6,24 @@ using System.Text.Json;
 
 namespace View.ViewModel
 {
-	public static class TreeConverter
+	public class TreeConverter
 	{
-		public static string PathImageDir { get; set; } = @"C:\Users\danil\OneDrive\Рабочий стол\УНИВЕР\5 сем\СПП\lab3\View\Sprites\folder.png";		
-		public static string PathImageFile { get; set; } = @"C:\Users\danil\OneDrive\Рабочий стол\УНИВЕР\5 сем\СПП\lab3\View\Sprites\file.png";
-		public static string PathImageLink { get; set; } = @"C:\Users\danil\OneDrive\Рабочий стол\УНИВЕР\5 сем\СПП\lab3\View\Sprites\link.png";
+		public string PathImageDir { get; set; } = @"C:\Users\danil\OneDrive\Рабочий стол\УНИВЕР\5 сем\СПП\lab3\View\Sprites\folder.png";		
+		public string PathImageFile { get; set; } = @"C:\Users\danil\OneDrive\Рабочий стол\УНИВЕР\5 сем\СПП\lab3\View\Sprites\file.png";
+		public string PathImageLink { get; set; } = @"C:\Users\danil\OneDrive\Рабочий стол\УНИВЕР\5 сем\СПП\lab3\View\Sprites\link.png";
 
 
+		public TreeConverter ()
+		{ }
 
-		public static TreeViewModel Convert(FileSystemTreeNode treeNode)
+		public TreeConverter (string pathImageDir, string pathImageFile, string pathImageLink)
+		{
+			PathImageDir = pathImageDir;			
+			PathImageFile = pathImageFile;
+			PathImageLink = pathImageLink;
+		}
+
+		public TreeViewModel Convert(FileSystemTreeNode treeNode)
 		{
 			TreeViewModel treeViewModelNode = new( treeNode.Name, $"{treeNode.Size:### ### ### ##0}b", $"{treeNode.RelativeSize:f4}%" );
 			if ( treeNode.FileType == FileType.RegularFile )

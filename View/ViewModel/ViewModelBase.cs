@@ -23,7 +23,8 @@ namespace View.ViewModel
 		}
 
 
-		
+		private DirectoryScanner _directoryScanner = new DirectoryScanner();
+		private TreeConverter _treeConverter = new TreeConverter();
 
 
 
@@ -33,11 +34,19 @@ namespace View.ViewModel
 			get { return _path; }
 			set { _path = value; OnPropertyChanged( "Path" ); }
 		}
+
+		private string _status = "";
+		public string Status
+		{
+			get { return _status; }
+			set { _status = value; OnPropertyChanged( "Status" ); }
+		}
 		
 
 		private void Cancel(object o)
 		{
-			DirectoryScanner.CancelScan();
+			Status = "cancelling...";
+			_directoryScanner.CancelScan();			
 		}
 
 		private Command? _cancelCommand = null;
@@ -65,9 +74,11 @@ namespace View.ViewModel
 				if ( value != null ) 
 				{
 					_treeRoot = value;
+					Status = "generating tree...";
 					TreeVM = new ObservableCollection<TreeViewModel>();
-					TreeVM.Add( TreeConverter.Convert( value) );
-					OnPropertyChanged( "TreeVM" );					
+					TreeVM.Add( _treeConverter.Convert( value) );
+					OnPropertyChanged( "TreeVM" );
+					Status = "ready";
 				}
 				else								
 					MessageBox.Show( "Such Directory or File does not exist." );
@@ -88,14 +99,15 @@ namespace View.ViewModel
 						
 
 			_scanStarted = true;
+			Status = "scanning...";
 
 			_scanThread = new Thread( () =>
 			{
-				var scanResult = DirectoryScanner.Scan( _path );
+				var scanResult = _directoryScanner.Scan( _path );
 				if ( scanResult != null )
 				{
-					DirectoryScanner.CountSizeRecursively( scanResult );
-					DirectoryScanner.CountRelativeSizeRecursively( scanResult );
+					_directoryScanner.CountSizeRecursively( scanResult );
+					_directoryScanner.CountRelativeSizeRecursively( scanResult );
 				}
 						
 				TreeRoot = scanResult;			

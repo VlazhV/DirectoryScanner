@@ -55,6 +55,9 @@
 				<ColumnDefinition Width="auto"/>
 			</Grid.ColumnDefinitions>
 
+			<TextBlock Text="{Binding Status}" FontSize="18" FontFamily="Consolas" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+
+
 			<Button Grid.Column="1" Width="75" FontSize="18" FontFamily="Consolas" VerticalAlignment="Center"  Command="{Binding ScanCommand}" IsDefault="true">
 				Старт
 			</Button>
