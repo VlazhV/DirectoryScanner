@@ -11,6 +11,7 @@ using Directory_Scanner;
 using System.Threading;
 using System.Windows.Controls;
 using System.Collections.ObjectModel;
+using System.IO;
 
 namespace View.ViewModel
 {
@@ -45,8 +46,12 @@ namespace View.ViewModel
 
 		private void Cancel(object o)
 		{
-			Status = "cancelling...";
-			_directoryScanner.CancelScan();			
+			MessageBox.Show( Directory.GetCurrentDirectory() );
+			if ( _scanStarted )
+			{			
+				Status = "cancelling...";
+				_directoryScanner.CancelScan();
+			}
 		}
 
 		private Command? _cancelCommand = null;
@@ -109,8 +114,8 @@ namespace View.ViewModel
 					_directoryScanner.CountSizeRecursively( scanResult );
 					_directoryScanner.CountRelativeSizeRecursively( scanResult );
 				}
-						
-				TreeRoot = scanResult;			
+				
+				TreeRoot = scanResult;							
 			} );
 			
 			_scanThread.Start();			

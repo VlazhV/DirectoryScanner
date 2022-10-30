@@ -33,23 +33,18 @@ namespace Directory_Scanner
             if ( fatherNode != null )
                 fatherNode.ChildrenFiles.Add( currTreeNode );
 
-            bool acquiredLock = false;
+            //bool acquiredLock = false;
             if ( directoryInfo.LinkTarget == null )
                 currTreeNode.FileType = FileType.Directory;
             else
             {
                 currTreeNode.FileType = FileType.Link;
-
-                
-                 //   Monitor.Enter( _lock, ref acquiredLock);
+                                
                 lock ( _lock )
                 {
                     --_numberOfExecutingTasks;
                 }
-
-                    //if ( acquiredLock ) Monitor.Exit( _lock );
-                    //else throw new Exception();
-				
+                   	
 				return currTreeNode;
             }
 
@@ -83,19 +78,13 @@ namespace Directory_Scanner
 			catch (UnauthorizedAccessException)
 			{                
 			}
-
-
-
-            //Monitor.Enter( _lock, ref acquiredLock );            
+            
+            
             lock(_lock)
             {
                 --_numberOfExecutingTasks;
-            }
+            }                       
 
-                //if ( acquiredLock ) Monitor.Exit( _lock );
-                //else throw new Exception();
-            
-            
             return currTreeNode;
 		}
 
@@ -135,13 +124,16 @@ namespace Directory_Scanner
                 if ( _numberOfExecutingTasks < MaxNumberOfExecutingTasks )
                 {
                     if ( _queue.TryDequeue( out var task ) )
-                    {                        
-                        ++_numberOfExecutingTasks;
+                    {
+                        lock(_lock)
+                        {
+                            ++_numberOfExecutingTasks;
+                        }
                         task.Start();
                     }
                 }
 
-                Console.WriteLine( $"{_numberOfExecutingTasks} ______ {_queue.Count}" );
+				Console.WriteLine( $"{_numberOfExecutingTasks} ______ {_queue.Count}" );
 			}
 
             return TreeRoot = mainTask.Result;
