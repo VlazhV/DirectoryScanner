@@ -5,8 +5,8 @@
 DirectoryScanner directoryScanner = new();
 
 do
-{
-	FileSystemTreeNode treeHead = directoryScanner.Scan( @"C:\" );
+{	
+	FileSystemTreeNode treeHead = directoryScanner.Scan( @"C:\Users\danil\OneDrive\Рабочий стол" );
 	directoryScanner.CountSizeRecursively( treeHead );
 	directoryScanner.CountRelativeSizeRecursively( treeHead );
 	Console.WriteLine( $"size = {treeHead.Size}" );

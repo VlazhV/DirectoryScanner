@@ -39,13 +39,13 @@ namespace Directory_Scanner
             else
             {
                 currTreeNode.FileType = FileType.Link;
-                                
-                lock ( _lock )
-                {
-                    --_numberOfExecutingTasks;
-                }
-                   	
-				return currTreeNode;
+
+				lock ( _lock )
+				{
+					--_numberOfExecutingTasks;
+			    }
+
+			return currTreeNode;
             }
 
             if ( _tokenSource.Token.IsCancellationRequested )
@@ -78,14 +78,14 @@ namespace Directory_Scanner
 			catch (UnauthorizedAccessException)
 			{                
 			}
-            
-            
-            lock(_lock)
-            {
-                --_numberOfExecutingTasks;
-            }                       
 
-            return currTreeNode;
+
+			lock ( _lock )
+			{
+				--_numberOfExecutingTasks;
+			}
+
+			return currTreeNode;
 		}
 
         
@@ -125,15 +125,15 @@ namespace Directory_Scanner
                 {
                     if ( _queue.TryDequeue( out var task ) )
                     {
-                        lock(_lock)
-                        {
-                            ++_numberOfExecutingTasks;
-                        }
-                        task.Start();
+						lock ( _lock )
+						{
+							++_numberOfExecutingTasks;
+						}
+						task.Start();
                     }
                 }
 
-				Console.WriteLine( $"{_numberOfExecutingTasks} ______ {_queue.Count}" );
+				//Console.WriteLine( $"{_numberOfExecutingTasks} ______ {_queue.Count}" );
 			}
 
             return TreeRoot = mainTask.Result;

@@ -46,7 +46,7 @@ namespace View.ViewModel
 
 		private void Cancel(object o)
 		{
-			MessageBox.Show( Directory.GetCurrentDirectory() );
+			
 			if ( _scanStarted )
 			{			
 				Status = "cancelling...";
